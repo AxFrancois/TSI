@@ -101,3 +101,16 @@ void invert_normals(mesh* m)
   for(unsigned int k=0,N=m->vertex.size();k<N;++k)
     m->vertex[k].normal*=-1.0f;
 }
+
+void get_aabb(const mesh* m, vec3* min, vec3* max)
+{
+  *min = m->vertex[0].position;
+  *max = *min;
+
+  for(unsigned int k=1,N=m->vertex.size();k<N;++k)
+  {
+    min->x = min->x > m->vertex[k].position.x ? m->vertex[k].position.x : min->x;
+    min->y = min->y > m->vertex[k].position.y ? m->vertex[k].position.y : min->y;
+    min->z = min->z > m->vertex[k].position.z ? m->vertex[k].position.z : min->z;
+  }
+}

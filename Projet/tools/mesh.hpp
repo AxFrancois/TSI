@@ -36,4 +36,7 @@ void apply_deformation(mesh* m,const mat4 T);
 /** inverse le sens de toutes les normales du maillage */
 void invert_normals(mesh* m);
 
+/** calcul de la boite englobante alignee sur les axes */
+void get_aabb(const mesh* m, vec3* min, vec3* max);
+
 #endif

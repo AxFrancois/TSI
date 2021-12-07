@@ -170,4 +170,47 @@ namespace glhelper
 
     delete [] pixels;
   }
+
+
+  GLuint load_texture(const char* filename)
+  {
+    GLuint texture_id;
+    // Chargement d'une texture (seul les textures tga sont supportes)
+    Image  *image = image_load_tga(filename);
+    if (image) //verification que l'image est bien chargee
+    {
+
+      //Creation d'un identifiant pour la texture
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1); CHECK_GL_ERROR();
+      glGenTextures(1, &texture_id); CHECK_GL_ERROR();
+
+      //Selection de la texture courante a partir de son identifiant
+      glBindTexture(GL_TEXTURE_2D, texture_id); CHECK_GL_ERROR();
+
+      //Parametres de la texture
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); CHECK_GL_ERROR();
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); CHECK_GL_ERROR();
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); CHECK_GL_ERROR();
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); CHECK_GL_ERROR();
+
+      //Envoie de l'image en memoire video
+      if(image->type==IMAGE_TYPE_RGB){ //image RGB
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image->width, image->height, 0, GL_RGB, GL_UNSIGNED_BYTE, image->data); CHECK_GL_ERROR();}
+      else if(image->type==IMAGE_TYPE_RGBA){ //image RGBA
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->width, image->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->data); CHECK_GL_ERROR();}
+      else{
+        std::cout<<"Image type not handled"<<std::endl;}
+
+      delete image;
+    }
+    else
+    {
+      std::cerr<<"Erreur chargement de l'image, etes-vous dans le bon repertoire?"<<std::endl;
+      abort();
+    }
+
+    return texture_id;
+}
+
+
 }

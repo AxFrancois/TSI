@@ -14,6 +14,8 @@
 #define GLEW_STATIC 1
 #include <GL/glew.h>
 
+#include "image.hpp"
+
 // based on https://blog.nobel-joergensen.com/2013/01/29/debugging-opengl-using-glgeterror/
 void _check_gl_error(const char *file, int line);
 #define CHECK_GL_ERROR() _check_gl_error(__FILE__, __LINE__)
@@ -44,6 +46,12 @@ namespace glhelper
   // Fonction pour faire une capture d'écran du FBO courant
   // filename : Nom de la capture d'écran, par défaut utilise un timestamp
   void print_screen(std::string filename = "");
+
+  // Fonction pour charger une texture sur le GPU
+  // filename : Nom du fichier contenant la texture
+  // Renvoie l'identifiant de la texture
+  GLuint load_texture(const char* filename);
+
 
 }// namespace glhelper
 

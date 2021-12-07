@@ -1,6 +1,6 @@
-# TP d'introduction à l'informatique graphique
+# Projet de jeu video : TSI
 
-TP tutoriel pour OpenGL, [TP original par Damien Rohmer et David Odin](https://imagecomputing.net/damien.rohmer/teaching/2015_2016/semestre_1/4eti_tsi/index.html), mis à jour par Thibault Dupont
+ATTENTION SI IL MANQUE LES LIBRAIRIES GLUT ET GLEW, COPIER COLLER LE DOSSIER EXTERN DES TUTORIAUX DANS LE DOSSIER PRINCIPAL !
 
 ## Compilation
 
@@ -12,7 +12,7 @@ cd build
 cmake ..
 make
 cd ..
-./build/programme_n  ( avec n le numero du programme souhaité )
+./build/projet
 ```
 
 ou 
@@ -20,7 +20,7 @@ ou
 ```sh
 mkdir build
 cmake . -B build
-make -C ./build && ./build/programme_n
+make -C ./build && ./build/projet
 ```
 
 **Testé sur windows avec Visual Studio Community 2019 (MSVC2019)**
