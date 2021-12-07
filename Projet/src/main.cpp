@@ -7,6 +7,9 @@
 
 #include "declaration.h"
 
+ /*****************************************************************************\
+ * Globales                                                                    *
+ \*****************************************************************************/
 //identifiant des shaders
 GLuint shader_program_id;
 GLuint gui_program_id;
@@ -18,6 +21,31 @@ objet3d obj[nb_obj];
 
 const int nb_text = 2;
 text text_to_draw[nb_text];
+
+
+const int size_height = 20;
+const int size_width = 10;
+/*
+Code numéro pour la grille : 
+https://i.stack.imgur.com/4pQum.png
+0 - vide
+1 - bleu, immobile (I)
+2 - jaune, immobile (O)
+3 - violet, immobile (T)
+4 - jaune, immobile (L)
+5 - bleu foncé, immobile (J)
+6 - orange, immobile (Z)
+7 - vert, immobile (S)
+11 - bleu (I)
+12 - jaune (O)
+13 - violet (T)
+14 - jaune (L)
+15 - bleu foncé (J)
+16 - orange (Z)
+17 - vert (S)
+*/
+int grid[size_height][size_width] = {};
+
 
 
 /*****************************************************************************\
@@ -48,6 +76,12 @@ static void init()
   text_to_draw[1].value = "Lyon";
   text_to_draw[1].bottomLeft.y = 0.0f;
   text_to_draw[1].topRight.y = 0.5f;
+
+  algorthmic_init();
+}
+
+static void algorthmic_init() {
+    display_grid();
 }
 
 /*****************************************************************************\
@@ -355,7 +389,6 @@ void init_model_2()
   obj[1].prog = shader_program_id;
 }
 
-
 void init_model_3()
 {
   // Chargement d'un maillage a partir d'un fichier
@@ -383,4 +416,28 @@ void init_model_3()
   obj[2].prog = shader_program_id;
 
   obj[2].tr.translation = vec3(2.0, 0.0, -10.0);
+}
+
+/*****************************************************************************\
+* Debug funtions                                                             *
+\*****************************************************************************/
+
+/*
+grid, size_height and size_width are global values, therefore we don't need parameters.
+print the grid in the terminal.
+ */
+void display_grid() {
+    for (int i = 0; i < size_height; i++)
+    {
+        printf("[");
+        for (int j = 0; j < size_width; j++)
+        {
+            printf("%d", grid[i][j]);
+            if (j != size_width - 1) {
+                printf(" ");
+            }
+        }
+        printf("]\n");
+    }
+    printf("\n");
 }

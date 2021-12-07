@@ -73,3 +73,6 @@ void init_model_2();
 void init_model_3();
 
 void draw_obj3d(const objet3d* const obj, camera cam);
+
+void algorthmic_init();
+void display_grid();
