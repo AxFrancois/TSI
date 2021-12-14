@@ -157,6 +157,7 @@ static void special_callback(int key, int x, int y)
         break;
     case GLUT_KEY_UP: //rotate right
         printf("Touche fleche haut\n");
+        rotate_right();
         break;
     case GLUT_KEY_RIGHT:    //move right
         printf("Touche fleche droite\n");
@@ -319,6 +320,7 @@ static void soft_drop()
             }
         }
         line_clear();
+        //GENERER UNE NOUVELLE PIECE
     }
     else {  //Copy of new grid into old one if there is no colision 
         for (int i = 0; i < size_height; i++) {
@@ -344,7 +346,27 @@ static void hard_drop()
 
 static void rotate_right()
 {
-
+    //top left corner and bottom right of the current piece in the grid. 
+    int corner[4] = { size_height, size_width, 0, 0 };
+    for (int i = 0; i < size_height; i++) {
+        for (int j = 0; j < size_width; j++) {
+            if (grid[i][j] > 10) {
+                if (i < corner[0]) {
+                    corner[0] = i;
+                }
+                if (j < corner[1]) {
+                    corner[1] = j;
+                }
+                if (i > corner[2]) {
+                    corner[2] = i;
+                }
+                if (j > corner[3]) {
+                    corner[3] = j;
+                }
+            }
+        }
+    }
+    
 }
 
 static void rotate_left()
