@@ -23,26 +23,27 @@ const int nb_text = 2;
 text text_to_draw[nb_text];
 
 
-const int size_height = 20;
-const int size_width = 10;
+//const int size_height = 20;
+//const int size_width = 10;
 /*
 Code numéro pour la grille : 
 https://i.stack.imgur.com/4pQum.png
-0 - vide
-1 - bleu, immobile (I)
-2 - jaune, immobile (O)
-3 - violet, immobile (T)
-4 - jaune, immobile (L)
-5 - bleu foncé, immobile (J)
-6 - orange, immobile (Z)
-7 - vert, immobile (S)
-11 - bleu (I)
-12 - jaune (O)
-13 - violet (T)
-14 - jaune (L)
-15 - bleu foncé (J)
-16 - orange (Z)
-17 - vert (S)
+0 - empty
+1 - blue, immovable (I)
+2 - yellow, immovable (O)
+3 - purple, immovable (T)
+4 - light orange, immovable (L)
+5 - dark blue, immovable (J)
+6 - orange, immovable (Z)
+7 - green, immovable (S)
+11 - blue (I)
+12 - yellow (O)
+13 - purple (T)
+14 - light orange (L)
+15 - dark blue (J)
+16 - green (Z)
+17 - green (S)
+99 - test cube
 */
 int grid[size_height][size_width] = {};
 
@@ -81,11 +82,16 @@ static void init()
 }
 
 static void algorthmic_init() {
-    display_grid();
+    display_grid(grid);
+    grid[0][0] = 11;
+    grid[1][1] = 11;
+    grid[0][3] = 3;
+    grid[9][0] = 9;
+    display_grid(grid);
 }
 
 /*****************************************************************************\
-* display_callback                                                           *
+* display_callback                                                            *
 \*****************************************************************************/
  static void display_callback()
 {
@@ -119,8 +125,9 @@ static void keyboard_callback(unsigned char key, int x, int y)
     case 'C':
         printf("Touche c\n");
         break;
-    case ' ':
+    case ' ':   //Hard drop
         printf("Touche espace\n");
+        hard_drop();
         break;
     case 27: //Touche Echap : gestion pause
       printf("Touche Echap\n");
@@ -138,20 +145,194 @@ static void special_callback(int key, int x, int y)
     {
     case GLUT_KEY_LEFT: //Move left
         printf("Touche fleche gauche\n");
+        move_left();
         break;
     case GLUT_KEY_UP: //rotate right
         printf("Touche fleche haut\n");
         break;
     case GLUT_KEY_RIGHT:    //move right
         printf("Touche fleche droite\n");
+        move_right();
         break;
     case GLUT_KEY_DOWN: //soft drop
         printf("Touche fleche bas\n");
+        soft_drop();
         break;
     default:
         break;
     }
 }
+
+
+/*****************************************************************************\
+* Move functions                                                              *
+\*****************************************************************************/
+
+static void move_right()
+{
+    int AuthorizedMovement = 1;
+    int new_grid[size_height][size_width]={};
+
+    for (int i = 0; i < size_height; i++){
+        for (int j = 0; j < size_width; j++){
+            if (((0 <= grid[i][j]) && (grid[i][j] < 10)) && (new_grid[i][j] == 0)) { //if the cell contains immovable bloc and the target cell is empty, just copy the bloc where it is
+                new_grid[i][j] = grid[i][j];
+            }
+            else if (grid[i][j] > 10) { //if the cell contains movable bloc
+                if (j == size_width-1) {   //if we are at the border
+                    AuthorizedMovement = 0;
+                    break;
+                }
+                if ((0 < new_grid[i][j + 1] && new_grid[i][j + 1] < 10) || (0 < grid[i][j + 1] && grid[i][j + 1] < 10)) { //if the cell is already occupied by immovable object, unauthorized movement so we leave
+                    AuthorizedMovement = 0;
+                    break;
+                }
+                else {  //else we copy it with the right move
+                    new_grid[i][j+1] = grid[i][j];
+                }
+            }
+        }
+        if (AuthorizedMovement == 0) {
+            break;
+        }
+    }
+    //Copy of new grid into old one if movement was correct
+    if (AuthorizedMovement == 1) {
+        for (int i = 0; i < size_height; i++) {
+            for (int j = 0; j < size_width; j++) {
+                grid[i][j] = new_grid[i][j];
+            }
+        }
+    }
+    display_grid(grid);
+}
+
+static void move_left()
+{
+    int AuthorizedMovement = 1;
+    int new_grid[size_height][size_width] = {};
+
+    for (int i = 0; i < size_height; i++) {
+        for (int j = 0; j < size_width; j++) {
+            if (((0 <= grid[i][j]) && (grid[i][j] < 10)) && (new_grid[i][j] == 0)) { //if the cell contains immovable bloc and the target cell is empty, just copy the bloc where it is
+                new_grid[i][j] = grid[i][j];
+            }
+            else if (grid[i][j] > 10) { //if the cell contains movable bloc
+                if (j == 0) {   //if we are at the border
+                    AuthorizedMovement = 0;
+                    break;
+                }
+                if ((0 < new_grid[i][j - 1] && new_grid[i][j - 1] < 10) || (0 < grid[i][j - 1] && grid[i][j - 1] < 10)) { //if the cell is already occupied by immovable object, unauthorized movement so we leave
+                    AuthorizedMovement = 0;
+                    break;
+                }
+                else {  //else we copy it with the left move
+                    new_grid[i][j - 1] = grid[i][j];
+                }
+            }
+        }
+        if (AuthorizedMovement == 0) {
+            break;
+        }
+    }
+    //Copy of new grid into old one if movement was correct
+    if (AuthorizedMovement == 1) {
+        for (int i = 0; i < size_height; i++) {
+            for (int j = 0; j < size_width; j++) {
+                grid[i][j] = new_grid[i][j];
+            }
+        }
+    }
+    display_grid(grid);
+}
+
+static void soft_drop()
+{
+    int Colision = 0;
+    int new_grid[size_height][size_width] = {};
+
+    for (int i = 0; i < size_height; i++) {
+        for (int j = 0; j < size_width; j++) {
+            if (((0 <= grid[i][j]) && (grid[i][j] < 10)) && (new_grid[i][j] == 0)) { //if the cell contains immovable bloc and the target cell is empty, just copy the bloc where it is
+                new_grid[i][j] = grid[i][j];
+            }
+            else if (grid[i][j] > 10) { //if the cell contains movable bloc
+                if (i == size_height-1) {   //if we are at the bottom
+                    Colision = 1;
+                    break;
+                }
+                if ((0 < new_grid[i + 1][j] && new_grid[i + 1][j] < 10) || (0 < grid[i + 1][j] && grid[i + 1][j] < 10)) { //if the cell is already occupied by immovable object, there is colision !
+                    Colision = 1;
+                    break;
+                }
+                else {  //else we copy it with the down move
+                    new_grid[i + 1][j] = grid[i][j];
+                }
+            }
+        }
+        if (Colision == 1) {
+            break;
+        }
+    }
+
+    //If there is colision : the piece can't move anymore
+    if (Colision == 1) {
+        for (int i = 0; i < size_height; i++) {
+            for (int j = 0; j < size_width; j++) {
+                if (grid[i][j] > 10) { //if the cell contains movable bloc
+                    int new_piece_value = 0;
+                    switch (grid[i][j])
+                    {
+                        case 11:
+                            new_piece_value = 1;
+                            break;
+                        case 12:
+                            new_piece_value = 2;
+                            break;
+                        case 13:
+                            new_piece_value = 3;
+                            break;
+                        case 14:
+                            new_piece_value = 4;
+                            break;
+                        case 15:
+                            new_piece_value = 5;
+                            break;
+                        case 16:
+                            new_piece_value = 6;
+                            break;
+                        case 17:
+                            new_piece_value = 7;
+                            break;
+                        default:
+                            printf("soft_drop : Unexpected value, %d\n", grid[i][j]);
+                            break;
+                    }
+                    grid[i][j] = new_piece_value;
+                }
+            }
+        }
+    }
+    else {  //Copy of new grid into old one if there is no colision 
+        for (int i = 0; i < size_height; i++) {
+            for (int j = 0; j < size_width; j++) {
+                grid[i][j] = new_grid[i][j];
+            }
+        }
+    }
+    display_grid(grid);
+}
+
+static void hard_drop()
+{
+    for (int h = 0; h < size_height; h++) {
+        soft_drop();
+    }
+}
+
+/*****************************************************************************\
+* Rotation functions                                                          *
+\*****************************************************************************/
 
 
 /*****************************************************************************\
@@ -164,7 +345,7 @@ static void timer_callback(int)
 }
 
 /*****************************************************************************\
-* main                                                                         *
+* main                                                                        *
 \*****************************************************************************/
 int main(int argc, char** argv)
 {
@@ -446,20 +627,20 @@ void init_model_3()
 }
 
 /*****************************************************************************\
-* Debug funtions                                                             *
+* Debug funtions                                                              *
 \*****************************************************************************/
 
 /*
 grid, size_height and size_width are global values, therefore we don't need parameters.
 print the grid in the terminal.
  */
-void display_grid() {
+void display_grid(int gridparam[size_height][size_width]) {
     for (int i = 0; i < size_height; i++)
     {
         printf("[");
         for (int j = 0; j < size_width; j++)
         {
-            printf("%d", grid[i][j]);
+            printf("%d", gridparam[i][j]);
             if (j != size_width - 1) {
                 printf(" ");
             }
