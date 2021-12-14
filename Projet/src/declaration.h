@@ -82,3 +82,6 @@ void move_right();
 void move_left();
 void soft_drop();
 void hard_drop();
+void line_clear();
+void rotate_right();
+void rotate_left();

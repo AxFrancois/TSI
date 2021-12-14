@@ -25,6 +25,7 @@ text text_to_draw[nb_text];
 
 //const int size_height = 20;
 //const int size_width = 10;
+
 /*
 Code numéro pour la grille : 
 https://i.stack.imgur.com/4pQum.png
@@ -47,7 +48,7 @@ https://i.stack.imgur.com/4pQum.png
 */
 int grid[size_height][size_width] = {};
 
-
+long int score = 0;
 
 /*****************************************************************************\
 * initialisation                                                              *
@@ -84,9 +85,15 @@ static void init()
 static void algorthmic_init() {
     display_grid(grid);
     grid[0][0] = 11;
-    grid[1][1] = 11;
-    grid[0][3] = 3;
-    grid[9][0] = 9;
+    grid[1][0] = 11;
+    grid[2][0] = 11;
+    grid[3][0] = 11;
+    for (int j = 0; j < size_width-1; j++) {
+        grid[19][j] = 1;
+    }
+    for (int j = 0; j < size_width-1; j++) {
+        grid[18][j] = 1;
+    }
     display_grid(grid);
 }
 
@@ -136,6 +143,7 @@ static void keyboard_callback(unsigned char key, int x, int y)
   }
 }
 // http://mperriss.free.fr/opengl/Guide_2D/claviersouris.htm
+
 /*****************************************************************************\
 * special_callback                                                            *
 \*****************************************************************************/
@@ -163,11 +171,9 @@ static void special_callback(int key, int x, int y)
     }
 }
 
-
 /*****************************************************************************\
 * Move functions                                                              *
 \*****************************************************************************/
-
 static void move_right()
 {
     int AuthorizedMovement = 1;
@@ -312,6 +318,7 @@ static void soft_drop()
                 }
             }
         }
+        line_clear();
     }
     else {  //Copy of new grid into old one if there is no colision 
         for (int i = 0; i < size_height; i++) {
@@ -321,6 +328,7 @@ static void soft_drop()
         }
     }
     display_grid(grid);
+
 }
 
 static void hard_drop()
@@ -334,6 +342,64 @@ static void hard_drop()
 * Rotation functions                                                          *
 \*****************************************************************************/
 
+static void rotate_right()
+{
+
+}
+
+static void rotate_left()
+{
+}
+
+/*****************************************************************************\
+* Scoring functions                                                           *
+\*****************************************************************************/
+
+static void line_clear() 
+{
+    display_grid(grid);
+    int lineClearCounter = 0;
+    for (int i = 0; i < size_height; i++) {
+        int hasEmpty = 0;
+        for (int j = 0; j < size_width; j++) {
+            if (grid[i][j] == 0) { 
+                hasEmpty = 1; 
+            }
+        }
+        if (hasEmpty == 0) {
+            lineClearCounter++;
+            for (int upperline = i; upperline >= 0; upperline--) {
+                if (upperline > 0) {
+                    for (int j = 0; j < size_width; j++) {
+                        grid[upperline][j] = grid[upperline - 1][j];
+                    }
+                }
+                else {
+                    for (int j = 0; j < size_width; j++) {
+                        grid[upperline][j] = 0;
+                    }
+                }
+            }
+        }
+    }
+    switch (lineClearCounter)
+    {
+    case 1:
+        score += 100;
+        break;
+    case 2:
+        score += 300;
+        break;
+    case 3:
+        score += 500;
+        break;
+    case 4:
+        score += 800;
+        break;
+    default:
+        break;
+    }
+}
 
 /*****************************************************************************\
 * timer_callback                                                              *
