@@ -70,6 +70,5 @@ void draw_text(const text* const t);
 
 void init_model_1();
 void init_model_2();
-void init_model_3();
 
 void draw_obj3d(const objet3d* const obj, camera cam);
