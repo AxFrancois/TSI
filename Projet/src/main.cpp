@@ -6,6 +6,8 @@
  \*****************************************************************************/
 
 #include "declaration.h"
+#include <stdio.h>
+
 
 //identifiant des shaders
 GLuint shader_program_id;
@@ -13,41 +15,63 @@ GLuint gui_program_id;
 
 camera cam;
 
-const int nb_obj = 3;
+const int nb_obj = 201;
 objet3d obj[nb_obj];
 
-const int nb_text = 2;
+const int nb_text = 3;
 text text_to_draw[nb_text];
 
+float secondes = 0;
+int timer = 0;
 
 /*****************************************************************************\
 * initialisation                                                              *
 \*****************************************************************************/
 static void init()
 {
+ 
   shader_program_id = glhelper::create_program_from_file("shaders/shader.vert", "shaders/shader.frag"); CHECK_GL_ERROR();
 
   cam.projection = matrice_projection(60.0f*M_PI/180.0f,1.0f,0.01f,100.0f);
   cam.tr.translation = vec3(0.0f, 1.0f, 0.0f);
   // cam.tr.translation = vec3(0.0f, 20.0f, 0.0f);
-  // cam.tr.rotation_center = vec3(0.0f, 20.0f, 0.0f);
+  // cam.tr.rotation_center = vec3(0.0f, 20.0f, 0.0f)C
   // cam.tr.rotation_euler = vec3(M_PI/2., 0.0f, 0.0f);
 
-  init_model_1();
-  init_model_2();
-  init_model_3();
+  initInfoPanel();
+  initGrid();
+
+
 
   gui_program_id = glhelper::create_program_from_file("shaders/gui.vert", "shaders/gui.frag"); CHECK_GL_ERROR();
+  
 
-  text_to_draw[0].value = "CPE";
-  text_to_draw[0].bottomLeft = vec2(-0.2, 0.5);
-  text_to_draw[0].topRight = vec2(0.2, 1);
+  text_to_draw[0].value = "Tetris";
+  text_to_draw[0].bottomLeft = vec2(-0.9, 0.7);
+  text_to_draw[0].topRight = vec2(-0.3, 1.2);
+
   init_text(text_to_draw);
+  text_to_draw[1] = text_to_draw[0];
 
-  text_to_draw[1]=text_to_draw[0];
-  text_to_draw[1].value = "Lyon";
-  text_to_draw[1].bottomLeft.y = 0.0f;
-  text_to_draw[1].topRight.y = 0.5f;
+  int score = 1000;
+  char currentScore[20] = "Score : " ;
+  char scoreBuffer[10];
+  sprintf(scoreBuffer, "%d", score);
+  strcat(currentScore, scoreBuffer);
+
+  text_to_draw[1].value = currentScore;
+  text_to_draw[1].bottomLeft = vec2(-0.9, 0.0);
+  text_to_draw[1].topRight = vec2(-0.3, 0.5);
+
+  char currentTime[20] = "Temps : ";
+  char tempsBuffer[10];
+  sprintf(tempsBuffer, "%d", timer);
+  strcat(currentTime, tempsBuffer);
+  text_to_draw[2] = text_to_draw[0];
+  text_to_draw[2].value = tempsBuffer;
+  text_to_draw[2].bottomLeft = vec2(-0.9, -0.5);
+  text_to_draw[2].topRight = vec2(-0.3, 0.0);
+
 }
 
 /*****************************************************************************\
@@ -65,6 +89,7 @@ static void init()
     draw_text(text_to_draw + i);
 
   glutSwapBuffers();
+ 
 }
 
 /*****************************************************************************\
@@ -90,6 +115,7 @@ static void keyboard_callback(unsigned char key, int, int)
 \*****************************************************************************/
 static void special_callback(int key, int, int)
 {
+
 }
 
 
@@ -99,7 +125,24 @@ static void special_callback(int key, int, int)
 static void timer_callback(int)
 {
   glutTimerFunc(25, timer_callback, 0);
+  secondes += 0.025;
+  if (timer+1 <= secondes)
+  {
+      timer += 1;
+      char currentTime[20] = "Temps : ";
+      char tempsBuffer[10];
+      sprintf(tempsBuffer, "%d", timer);
+      strcat(currentTime, tempsBuffer);
+      text_to_draw[2] = text_to_draw[0];
+      text_to_draw[2].value = currentTime;
+      text_to_draw[2].bottomLeft = vec2(-0.9, -0.5);
+      text_to_draw[2].topRight = vec2(-0.3, 0.0);
+
+      
+  }
   glutPostRedisplay();
+
+
 }
 
 /*****************************************************************************\
@@ -123,7 +166,9 @@ int main(int argc, char** argv)
   std::cout << "OpenGL: " << (GLchar *)(glGetString(GL_VERSION)) << std::endl;
 
   init();
+
   glutMainLoop();
+
 
   return 0;
 }
@@ -276,48 +321,19 @@ GLuint upload_mesh_to_gpu(const mesh& m)
   return vao;
 }
 
-void init_model_1()
-{
-  // Chargement d'un maillage a partir d'un fichier
-  mesh m = load_obj_file("data/stegosaurus.obj");
-
-  // Affecte une transformation sur les sommets du maillage
-  float s = 0.2f;
-  mat4 transform = mat4(   s, 0.0f, 0.0f, 0.0f,
-      0.0f,    s, 0.0f, 0.0f,
-      0.0f, 0.0f,   s , 0.0f,
-      0.0f, 0.0f, 0.0f, 1.0f);
-  apply_deformation(&m,transform);
-
-  // Centre la rotation du modele 1 autour de son centre de gravite approximatif
-  obj[0].tr.rotation_center = vec3(0.0f,0.0f,0.0f);
-
-  update_normals(&m);
-  fill_color(&m,vec3(1.0f,1.0f,1.0f));
-
-  obj[0].vao = upload_mesh_to_gpu(m);
-
-  obj[0].nb_triangle = m.connectivity.size();
-  obj[0].texture_id = glhelper::load_texture("data/stegosaurus.tga");
-  obj[0].visible = true;
-  obj[0].prog = shader_program_id;
-
-  obj[0].tr.translation = vec3(-2.0, 0.0, -10.0);
-}
-
-void init_model_2()
+void initInfoPanel()
 {
 
   mesh m;
 
   //coordonnees geometriques des sommets
-  vec3 p0=vec3(-25.0f,0.0f,-25.0f);
-  vec3 p1=vec3( 25.0f,0.0f,-25.0f);
-  vec3 p2=vec3( 25.0f,0.0f, 25.0f);
-  vec3 p3=vec3(-25.0f,0.0f, 25.0f);
+  vec3 p0=vec3(-2.9f,-2.0f,-5.5f);
+  vec3 p1=vec3( -0.9f,-2.0f,-5.5f);
+  vec3 p2=vec3( -2.9f,4.0f,-5.5f);
+  vec3 p3=vec3(-0.9f,4.0f,-5.5f);
 
   //normales pour chaque sommet
-  vec3 n0=vec3(0.0f,1.0f,0.0f);
+  vec3 n0=vec3(0.0f,0.0f,1.0f);
   vec3 n1=n0;
   vec3 n2=n0;
   vec3 n3=n0;
@@ -343,26 +359,26 @@ void init_model_2()
 
   //indice des triangles
   triangle_index tri0=triangle_index(0,1,2);
-  triangle_index tri1=triangle_index(0,2,3);  
+  triangle_index tri1=triangle_index(1,3,2);  
   m.connectivity = {tri0, tri1};
 
-  obj[1].nb_triangle = 2;
-  obj[1].vao = upload_mesh_to_gpu(m);
+  obj[0].nb_triangle = 2;
+  obj[0].vao = upload_mesh_to_gpu(m);
 
-  obj[1].texture_id = glhelper::load_texture("data/grass.tga");
+  obj[0].texture_id = glhelper::load_texture("data/white.tga");
 
-  obj[1].visible = true;
-  obj[1].prog = shader_program_id;
+  obj[0].visible = true;
+  obj[0].prog = shader_program_id;
 }
 
-
-void init_model_3()
+void initGrid()
 {
   // Chargement d'un maillage a partir d'un fichier
-  mesh m = load_off_file("data/armadillo_light.off");
+  mesh m = load_obj_file("data/untitled.obj");
 
-  // Affecte une transformation sur les sommets du maillage
-  float s = 0.01f;
+    // Affecte une transformation sur les sommets du maillage
+  float s = 0.15f;
+  float sizeOfOneCube = s * 2;
   mat4 transform = mat4(   s, 0.0f, 0.0f, 0.0f,
       0.0f,    s, 0.0f, 0.50f,
       0.0f, 0.0f,   s , 0.0f,
@@ -371,16 +387,36 @@ void init_model_3()
   apply_deformation(&m,matrice_rotation(M_PI,0.0f,1.0f,0.0f));
   apply_deformation(&m,transform);
 
+  // Centre la rotation du modele 1 autour de son centre de gravite approximatif
+  obj[1].tr.rotation_center = vec3(0.0f,0.0f,0.0f);
+
   update_normals(&m);
   fill_color(&m,vec3(1.0f,1.0f,1.0f));
 
-  obj[2].vao = upload_mesh_to_gpu(m);
+  obj[1].vao = upload_mesh_to_gpu(m);
 
-  obj[2].nb_triangle = m.connectivity.size();
-  obj[2].texture_id = glhelper::load_texture("data/white.tga");
+  obj[1].nb_triangle = m.connectivity.size();
+  obj[1].texture_id = glhelper::load_texture("data/blue.tga");
 
-  obj[2].visible = true;
-  obj[2].prog = shader_program_id;
+  obj[1].visible = true;
+  obj[1].prog = shader_program_id;
 
-  obj[2].tr.translation = vec3(2.0, 0.0, -10.0);
+  obj[1].tr.translation = vec3(-0.5, -2.3, -5.5);
+
+  int currentRows = 0;
+  int currentColumns = 1;
+  for(int i = 1;i<200;i++)
+  {
+    obj[i+1] = obj[1];
+
+   if (i % 10 == 0)
+    {
+      ++currentRows;
+      currentColumns = 0;
+    }
+
+    obj[i+1].tr.translation.x += sizeOfOneCube *currentColumns;
+    obj[i+1].tr.translation.y += sizeOfOneCube *currentRows;
+    ++currentColumns;
+  }
 }

@@ -68,8 +68,8 @@ void init_text(text *t);
 void draw_text(const text* const t);
 
 
-void init_model_1();
-void init_model_2();
-void init_model_3();
+void initInfoPanel();
+void initGrid();
+void myTimer(int value);
 
 void draw_obj3d(const objet3d* const obj, camera cam);
