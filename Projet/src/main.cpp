@@ -104,26 +104,53 @@ static void algorthmic_init() {
 /*****************************************************************************\
 * keyboard_callback                                                           *
 \*****************************************************************************/
-static void keyboard_callback(unsigned char key, int, int)
+static void keyboard_callback(unsigned char key, int x, int y)
 {
   switch (key)
   {
     case 'p':
       glhelper::print_screen();
       break;
-    case 'q':
-    case 'Q':
-    case 27:
+    case 'z':   //rotate left
+    case 'Z':
+        printf("Touche z\n");
+        break;
+    case 'c':   //HOLD (stock de pièce)
+    case 'C':
+        printf("Touche c\n");
+        break;
+    case ' ':
+        printf("Touche espace\n");
+        break;
+    case 27: //Touche Echap : gestion pause
+      printf("Touche Echap\n");
       exit(0);
       break;
   }
 }
-
+// http://mperriss.free.fr/opengl/Guide_2D/claviersouris.htm
 /*****************************************************************************\
 * special_callback                                                            *
 \*****************************************************************************/
-static void special_callback(int key, int, int)
+static void special_callback(int key, int x, int y)
 {
+    switch (key)
+    {
+    case GLUT_KEY_LEFT: //Move left
+        printf("Touche fleche gauche\n");
+        break;
+    case GLUT_KEY_UP: //rotate right
+        printf("Touche fleche haut\n");
+        break;
+    case GLUT_KEY_RIGHT:    //move right
+        printf("Touche fleche droite\n");
+        break;
+    case GLUT_KEY_DOWN: //soft drop
+        printf("Touche fleche bas\n");
+        break;
+    default:
+        break;
+    }
 }
 
 
