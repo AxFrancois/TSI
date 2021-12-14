@@ -73,3 +73,15 @@ void initGrid();
 void myTimer(int value);
 
 void draw_obj3d(const objet3d* const obj, camera cam);
+
+void algorthmic_init();
+const int size_height = 20;
+const int size_width = 10;
+void display_grid(int gridparam[size_height][size_width]);
+void move_right();
+void move_left();
+void soft_drop();
+void hard_drop();
+void line_clear();
+void rotate_right();
+void rotate_left();

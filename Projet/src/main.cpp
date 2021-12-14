@@ -6,9 +6,10 @@
  \*****************************************************************************/
 
 #include "declaration.h"
-#include <stdio.h>
 
-
+ /*****************************************************************************\
+ * Globales                                                                    *
+ \*****************************************************************************/
 //identifiant des shaders
 GLuint shader_program_id;
 GLuint gui_program_id;
@@ -24,36 +25,60 @@ text text_to_draw[nb_text];
 float secondes = 0;
 int timer = 0;
 
+
+//const int size_height = 20;
+//const int size_width = 10;
+
+/*
+Code num�ro pour la grille : 
+https://i.stack.imgur.com/4pQum.png
+0 - empty
+1 - blue, immovable (I)
+2 - yellow, immovable (O)
+3 - purple, immovable (T)
+4 - light orange, immovable (L)
+5 - dark blue, immovable (J)
+6 - orange, immovable (Z)
+7 - green, immovable (S)
+11 - blue (I)
+12 - yellow (O)
+13 - purple (T)
+14 - light orange (L)
+15 - dark blue (J)
+16 - green (Z)
+17 - green (S)
+99 - test cube
+*/
+int grid[size_height][size_width] = {};
+
+long int score = 0;
+
 /*****************************************************************************\
 * initialisation                                                              *
 \*****************************************************************************/
 static void init()
 {
- 
   shader_program_id = glhelper::create_program_from_file("shaders/shader.vert", "shaders/shader.frag"); CHECK_GL_ERROR();
 
   cam.projection = matrice_projection(60.0f*M_PI/180.0f,1.0f,0.01f,100.0f);
   cam.tr.translation = vec3(0.0f, 1.0f, 0.0f);
   // cam.tr.translation = vec3(0.0f, 20.0f, 0.0f);
-  // cam.tr.rotation_center = vec3(0.0f, 20.0f, 0.0f)C
+  // cam.tr.rotation_center = vec3(0.0f, 20.0f, 0.0f);
   // cam.tr.rotation_euler = vec3(M_PI/2., 0.0f, 0.0f);
 
   initInfoPanel();
   initGrid();
 
-
-
   gui_program_id = glhelper::create_program_from_file("shaders/gui.vert", "shaders/gui.frag"); CHECK_GL_ERROR();
-  
+
 
   text_to_draw[0].value = "Tetris";
   text_to_draw[0].bottomLeft = vec2(-0.9, 0.7);
   text_to_draw[0].topRight = vec2(-0.3, 1.2);
 
   init_text(text_to_draw);
-  text_to_draw[1] = text_to_draw[0];
+  text_to_draw[1]=text_to_draw[0];
 
-  int score = 1000;
   char currentScore[20] = "Score : " ;
   char scoreBuffer[10];
   sprintf(scoreBuffer, "%d", score);
@@ -72,10 +97,26 @@ static void init()
   text_to_draw[2].bottomLeft = vec2(-0.9, -0.5);
   text_to_draw[2].topRight = vec2(-0.3, 0.0);
 
+  algorthmic_init();
+}
+
+static void algorthmic_init() {
+    display_grid(grid);
+    grid[0][0] = 11;
+    grid[1][0] = 11;
+    grid[2][0] = 11;
+    grid[3][0] = 11;
+    for (int j = 0; j < size_width-1; j++) {
+        grid[19][j] = 1;
+    }
+    for (int j = 0; j < size_width-1; j++) {
+        grid[18][j] = 1;
+    }
+    display_grid(grid);
 }
 
 /*****************************************************************************\
-* display_callback                                                           *
+* display_callback                                                            *
 \*****************************************************************************/
  static void display_callback()
 {
@@ -89,35 +130,316 @@ static void init()
     draw_text(text_to_draw + i);
 
   glutSwapBuffers();
- 
 }
 
 /*****************************************************************************\
 * keyboard_callback                                                           *
 \*****************************************************************************/
-static void keyboard_callback(unsigned char key, int, int)
+static void keyboard_callback(unsigned char key, int x, int y)
 {
   switch (key)
   {
     case 'p':
       glhelper::print_screen();
       break;
-    case 'q':
-    case 'Q':
-    case 27:
+    case 'z':   //rotate left
+    case 'Z':
+        printf("Touche z\n");
+        break;
+    case 'c':   //HOLD (stock de pi�ce)
+    case 'C':
+        printf("Touche c\n");
+        break;
+    case ' ':   //Hard drop
+        printf("Touche espace\n");
+        hard_drop();
+        break;
+    case 27: //Touche Echap : gestion pause
+      printf("Touche Echap\n");
       exit(0);
       break;
   }
 }
+// http://mperriss.free.fr/opengl/Guide_2D/claviersouris.htm
 
 /*****************************************************************************\
 * special_callback                                                            *
 \*****************************************************************************/
-static void special_callback(int key, int, int)
+static void special_callback(int key, int x, int y)
 {
+    switch (key)
+    {
+    case GLUT_KEY_LEFT: //Move left
+        printf("Touche fleche gauche\n");
+        move_left();
+        break;
+    case GLUT_KEY_UP: //rotate right
+        printf("Touche fleche haut\n");
+        rotate_right();
+        break;
+    case GLUT_KEY_RIGHT:    //move right
+        printf("Touche fleche droite\n");
+        move_right();
+        break;
+    case GLUT_KEY_DOWN: //soft drop
+        printf("Touche fleche bas\n");
+        soft_drop();
+        break;
+    default:
+        break;
+    }
+}
+
+/*****************************************************************************\
+* Move functions                                                              *
+\*****************************************************************************/
+static void move_right()
+{
+    int AuthorizedMovement = 1;
+    int new_grid[size_height][size_width]={};
+
+    for (int i = 0; i < size_height; i++){
+        for (int j = 0; j < size_width; j++){
+            if (((0 <= grid[i][j]) && (grid[i][j] < 10)) && (new_grid[i][j] == 0)) { //if the cell contains immovable bloc and the target cell is empty, just copy the bloc where it is
+                new_grid[i][j] = grid[i][j];
+            }
+            else if (grid[i][j] > 10) { //if the cell contains movable bloc
+                if (j == size_width-1) {   //if we are at the border
+                    AuthorizedMovement = 0;
+                    break;
+                }
+                if ((0 < new_grid[i][j + 1] && new_grid[i][j + 1] < 10) || (0 < grid[i][j + 1] && grid[i][j + 1] < 10)) { //if the cell is already occupied by immovable object, unauthorized movement so we leave
+                    AuthorizedMovement = 0;
+                    break;
+                }
+                else {  //else we copy it with the right move
+                    new_grid[i][j+1] = grid[i][j];
+                }
+            }
+        }
+        if (AuthorizedMovement == 0) {
+            break;
+        }
+    }
+    //Copy of new grid into old one if movement was correct
+    if (AuthorizedMovement == 1) {
+        for (int i = 0; i < size_height; i++) {
+            for (int j = 0; j < size_width; j++) {
+                grid[i][j] = new_grid[i][j];
+            }
+        }
+    }
+    display_grid(grid);
+}
+
+static void move_left()
+{
+    int AuthorizedMovement = 1;
+    int new_grid[size_height][size_width] = {};
+
+    for (int i = 0; i < size_height; i++) {
+        for (int j = 0; j < size_width; j++) {
+            if (((0 <= grid[i][j]) && (grid[i][j] < 10)) && (new_grid[i][j] == 0)) { //if the cell contains immovable bloc and the target cell is empty, just copy the bloc where it is
+                new_grid[i][j] = grid[i][j];
+            }
+            else if (grid[i][j] > 10) { //if the cell contains movable bloc
+                if (j == 0) {   //if we are at the border
+                    AuthorizedMovement = 0;
+                    break;
+                }
+                if ((0 < new_grid[i][j - 1] && new_grid[i][j - 1] < 10) || (0 < grid[i][j - 1] && grid[i][j - 1] < 10)) { //if the cell is already occupied by immovable object, unauthorized movement so we leave
+                    AuthorizedMovement = 0;
+                    break;
+                }
+                else {  //else we copy it with the left move
+                    new_grid[i][j - 1] = grid[i][j];
+                }
+            }
+        }
+        if (AuthorizedMovement == 0) {
+            break;
+        }
+    }
+    //Copy of new grid into old one if movement was correct
+    if (AuthorizedMovement == 1) {
+        for (int i = 0; i < size_height; i++) {
+            for (int j = 0; j < size_width; j++) {
+                grid[i][j] = new_grid[i][j];
+            }
+        }
+    }
+    display_grid(grid);
+}
+
+static void soft_drop()
+{
+    int Colision = 0;
+    int new_grid[size_height][size_width] = {};
+
+    for (int i = 0; i < size_height; i++) {
+        for (int j = 0; j < size_width; j++) {
+            if (((0 <= grid[i][j]) && (grid[i][j] < 10)) && (new_grid[i][j] == 0)) { //if the cell contains immovable bloc and the target cell is empty, just copy the bloc where it is
+                new_grid[i][j] = grid[i][j];
+            }
+            else if (grid[i][j] > 10) { //if the cell contains movable bloc
+                if (i == size_height-1) {   //if we are at the bottom
+                    Colision = 1;
+                    break;
+                }
+                if ((0 < new_grid[i + 1][j] && new_grid[i + 1][j] < 10) || (0 < grid[i + 1][j] && grid[i + 1][j] < 10)) { //if the cell is already occupied by immovable object, there is colision !
+                    Colision = 1;
+                    break;
+                }
+                else {  //else we copy it with the down move
+                    new_grid[i + 1][j] = grid[i][j];
+                }
+            }
+        }
+        if (Colision == 1) {
+            break;
+        }
+    }
+
+    //If there is colision : the piece can't move anymore
+    if (Colision == 1) {
+        for (int i = 0; i < size_height; i++) {
+            for (int j = 0; j < size_width; j++) {
+                if (grid[i][j] > 10) { //if the cell contains movable bloc
+                    int new_piece_value = 0;
+                    switch (grid[i][j])
+                    {
+                        case 11:
+                            new_piece_value = 1;
+                            break;
+                        case 12:
+                            new_piece_value = 2;
+                            break;
+                        case 13:
+                            new_piece_value = 3;
+                            break;
+                        case 14:
+                            new_piece_value = 4;
+                            break;
+                        case 15:
+                            new_piece_value = 5;
+                            break;
+                        case 16:
+                            new_piece_value = 6;
+                            break;
+                        case 17:
+                            new_piece_value = 7;
+                            break;
+                        default:
+                            printf("soft_drop : Unexpected value, %d\n", grid[i][j]);
+                            break;
+                    }
+                    grid[i][j] = new_piece_value;
+                }
+            }
+        }
+        line_clear();
+        //GENERER UNE NOUVELLE PIECE
+    }
+    else {  //Copy of new grid into old one if there is no colision 
+        for (int i = 0; i < size_height; i++) {
+            for (int j = 0; j < size_width; j++) {
+                grid[i][j] = new_grid[i][j];
+            }
+        }
+    }
+    display_grid(grid);
 
 }
 
+static void hard_drop()
+{
+    for (int h = 0; h < size_height; h++) {
+        soft_drop();
+    }
+}
+
+/*****************************************************************************\
+* Rotation functions                                                          *
+\*****************************************************************************/
+
+static void rotate_right()
+{
+    //top left corner and bottom right of the current piece in the grid. 
+    int corner[4] = { size_height, size_width, 0, 0 };
+    for (int i = 0; i < size_height; i++) {
+        for (int j = 0; j < size_width; j++) {
+            if (grid[i][j] > 10) {
+                if (i < corner[0]) {
+                    corner[0] = i;
+                }
+                if (j < corner[1]) {
+                    corner[1] = j;
+                }
+                if (i > corner[2]) {
+                    corner[2] = i;
+                }
+                if (j > corner[3]) {
+                    corner[3] = j;
+                }
+            }
+        }
+    }
+    
+}
+
+static void rotate_left()
+{
+}
+
+/*****************************************************************************\
+* Scoring functions                                                           *
+\*****************************************************************************/
+
+static void line_clear() 
+{
+    display_grid(grid);
+    int lineClearCounter = 0;
+    for (int i = 0; i < size_height; i++) {
+        int hasEmpty = 0;
+        for (int j = 0; j < size_width; j++) {
+            if (grid[i][j] == 0) { 
+                hasEmpty = 1; 
+            }
+        }
+        if (hasEmpty == 0) {
+            lineClearCounter++;
+            for (int upperline = i; upperline >= 0; upperline--) {
+                if (upperline > 0) {
+                    for (int j = 0; j < size_width; j++) {
+                        grid[upperline][j] = grid[upperline - 1][j];
+                    }
+                }
+                else {
+                    for (int j = 0; j < size_width; j++) {
+                        grid[upperline][j] = 0;
+                    }
+                }
+            }
+        }
+    }
+    switch (lineClearCounter)
+    {
+    case 1:
+        score += 100;
+        break;
+    case 2:
+        score += 300;
+        break;
+    case 3:
+        score += 500;
+        break;
+    case 4:
+        score += 800;
+        break;
+    default:
+        break;
+    }
+}
 
 /*****************************************************************************\
 * timer_callback                                                              *
@@ -145,8 +467,9 @@ static void timer_callback(int)
 
 }
 
+
 /*****************************************************************************\
-* main                                                                         *
+* main                                                                        *
 \*****************************************************************************/
 int main(int argc, char** argv)
 {
@@ -166,9 +489,7 @@ int main(int argc, char** argv)
   std::cout << "OpenGL: " << (GLchar *)(glGetString(GL_VERSION)) << std::endl;
 
   init();
-
   glutMainLoop();
-
 
   return 0;
 }
@@ -419,4 +740,28 @@ void initGrid()
     obj[i+1].tr.translation.y += sizeOfOneCube *currentRows;
     ++currentColumns;
   }
+}
+
+/*****************************************************************************\
+* Debug funtions                                                              *
+\*****************************************************************************/
+
+/*
+grid, size_height and size_width are global values, therefore we don't need parameters.
+print the grid in the terminal.
+ */
+void display_grid(int gridparam[size_height][size_width]) {
+    for (int i = 0; i < size_height; i++)
+    {
+        printf("[");
+        for (int j = 0; j < size_width; j++)
+        {
+            printf("%d", gridparam[i][j]);
+            if (j != size_width - 1) {
+                printf(" ");
+            }
+        }
+        printf("]\n");
+    }
+    printf("\n");
 }
