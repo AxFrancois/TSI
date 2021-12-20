@@ -102,10 +102,10 @@ static void init()
 
 static void algorthmic_init() {
     display_grid(grid);
-    grid[5][3] = 11;
-    grid[6][3] = 11;
-    grid[6][4] = 11;
-    grid[7][3] = 11;
+    grid[0][0] = 11;
+    grid[0][1] = 11;
+    grid[0][2] = 11;
+    grid[1][1] = 11;
     for (int j = 1; j < size_width; j++) {
         grid[19][j] = 1;
     }
@@ -400,8 +400,11 @@ static void rotate_right()
                 new_grid[i][j] = grid[i][j];
             }
             else if (grid[i][j] > 10) { //if the cell contains movable bloc
-                int target_x = corner[0] + j - corner[1]; //corner[0] + (j - corner[1]);
-                int target_y = corner[1] + size_X - (i - corner[0]) -1; //FONCTIONNE
+                int target_x = corner[0] + j - corner[1]; 
+                int target_y = corner[1] + size_X - (i - corner[0]) -1;
+                //printf("[%d,%d] -> [%d,%d]\n", i,j, target_x, target_y);
+                //printf("%d %d\n", size_X, size_Y);
+                //printf("%d %d\n", corner[0], corner[1]);
                 if (target_y >= size_width || target_x >= size_height || target_y < 0 || target_x < 0) {   //if we are at the border
                     AuthorizedMovement = 0;
                     break;
@@ -412,9 +415,6 @@ static void rotate_right()
                 }
                 else {  //else we copy it with the right move
                     new_grid[target_x][target_y] = grid[i][j];
-                    //printf("[%d,%d] -> [%d,%d]\n", i,j, target_x, target_y);
-                    //printf("%d %d\n", size_X, size_Y);
-                    //printf("%d %d\n", corner[0], corner[1]);
                 }
             }
         }
@@ -435,7 +435,72 @@ static void rotate_right()
 
 static void rotate_left()
 {
+    //top left corner and bottom right of the current piece in the grid. 
+    int corner[4] = { size_height, size_width, 0, 0 };
+    for (int i = 0; i < size_height; i++) {
+        for (int j = 0; j < size_width; j++) {
+            if (grid[i][j] > 10) {
+                if (i < corner[0]) {
+                    corner[0] = i;
+                }
+                if (j < corner[1]) {
+                    corner[1] = j;
+                }
+                if (i > corner[2]) {
+                    corner[2] = i;
+                }
+                if (j > corner[3]) {
+                    corner[3] = j;
+                }
+            }
+        }
+    }
+    //printf("%d %d %d %d\n", corner[0], corner[1], corner[2], corner[3]);
 
+    int size_X = corner[2] - corner[0] + 1;
+    int size_Y = corner[3] - corner[1] + 1;
+    //printf("%d %d\n", size_X, size_Y);
+
+    int AuthorizedMovement = 1;
+    int new_grid[size_height][size_width] = {};
+
+    for (int i = 0; i < size_height; i++) {
+        for (int j = 0; j < size_width; j++) {
+            if (((0 <= grid[i][j]) && (grid[i][j] < 10)) && (new_grid[i][j] == 0)) { //if the cell contains immovable bloc and the target cell is empty, just copy the bloc where it is
+                new_grid[i][j] = grid[i][j];
+            }
+            else if (grid[i][j] > 10) { //if the cell contains movable bloc
+                int target_x = j + corner[0] - corner[1]; //corner[0] + (j - corner[1]);
+                int target_y = corner[1] + size_X - (i - corner[0]) - 1; //FONCTIONNE
+                //printf("[%d,%d] -> [%d,%d]\n", i, j, target_x, target_y);
+                //printf("%d %d\n", size_X, size_Y);
+                //printf("%d %d\n", corner[0], corner[1]);
+                if (target_y >= size_width || target_x >= size_height || target_y < 0 || target_x < 0) {   //if we are at the border
+                    AuthorizedMovement = 0;
+                    break;
+                }
+                if ((0 < new_grid[target_x][target_y] && new_grid[target_x][target_y] < 10) || (0 < grid[target_x][target_y] && grid[target_x][target_y] < 10)) { //if the cell is already occupied by immovable object, unauthorized movement so we leave
+                    AuthorizedMovement = 0;
+                    break;
+                }
+                else {  //else we copy it with the right move
+                    new_grid[target_x][target_y] = grid[i][j];
+                }
+            }
+        }
+        if (AuthorizedMovement == 0) {
+            break;
+        }
+    }
+    //Copy of new grid into old one if movement was correct
+    if (AuthorizedMovement == 1) {
+        for (int i = 0; i < size_height; i++) {
+            for (int j = 0; j < size_width; j++) {
+                grid[i][j] = new_grid[i][j];
+            }
+        }
+    }
+    display_grid(grid);
 }
 
 /*****************************************************************************\
