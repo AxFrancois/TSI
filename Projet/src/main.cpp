@@ -829,7 +829,7 @@ void initGrid()
   obj[1].vao = upload_mesh_to_gpu(m);
 
   obj[1].nb_triangle = m.connectivity.size();
-  obj[1].texture_id = glhelper::load_texture("data/blue.tga");
+  obj[1].texture_id = glhelper::load_texture("data/white.tga");
 
   obj[1].visible = true;
   obj[1].prog = shader_program_id;
@@ -852,8 +852,143 @@ void initGrid()
     obj[i+1].tr.translation.y += sizeOfOneCube *currentRows;
     ++currentColumns;
   }
+  generatePieceS();
 }
 
+void generatePieceO() {
+    int initRows = 0;
+    int initColumns = size_width/2;
+    int piece_width = 2;
+    int piece_height = 2;
+
+    for (int i = 0; i < piece_height; i++)
+    {
+        for (int j = 0; j < piece_width; j++)
+        {
+            obj[(size_height * size_width) - initColumns+j - initRows].texture_id = glhelper::load_texture("data/yellow.tga");
+        }
+        initRows = size_width;
+    }
+}
+
+void generatePieceI() {
+    int initRows = 0;
+    int initColumns = size_width / 2 +1;
+    int piece_width = 4;
+    int piece_height = 1;
+
+    for (int i = 0; i < piece_height; i++)
+    {
+        for (int j = 0; j < piece_width; j++)
+        {
+            obj[(size_height * size_width) - initColumns + j - initRows].texture_id = glhelper::load_texture("data/blue.tga");
+        }
+    }
+}
+
+void generatePieceT() {
+    int initRows = 0;
+    int initColumns = size_width / 2;
+    int piece_width = 3;
+    int piece_height = 2;
+
+    for (int i = 0; i < piece_height; i++)
+    {
+        for (int j = 0; j < piece_width; j++)
+        {
+            obj[(size_height * size_width) - initColumns + j+i - initRows].texture_id = glhelper::load_texture("data/purple.tga");
+            if (i == 1) { break; }
+        }
+        initRows = size_width;
+    }
+}
+
+void generatePieceL() {
+    int initRows = 0;
+    int initColumns = size_width / 2;
+    int piece_width = 3;
+    int piece_height = 2;
+
+    for (int i = 0; i < piece_height; i++)
+    {
+        for (int j = 0; j < piece_width; j++)
+        {
+            obj[(size_height * size_width) - initColumns + j - initRows].texture_id = glhelper::load_texture("data/yellow.tga");
+            if (i == 1) { break; }
+        }
+        initRows = size_width;
+    }
+}
+
+void generatePieceJ() {
+    int initRows = 0;
+    int initColumns = size_width / 2;
+    int piece_width = 3;
+    int piece_height = 2;
+
+    for (int i = 0; i < piece_height; i++)
+    {
+        for (int j = 0; j < piece_width; j++)
+        {
+            if (i == 1) 
+            { 
+                initColumns -= 2; 
+                obj[(size_height * size_width) - initColumns + j - initRows].texture_id = glhelper::load_texture("data/dark_blue.tga");
+                break;
+            }
+            obj[(size_height * size_width) - initColumns + j - initRows].texture_id = glhelper::load_texture("data/dark_blue.tga");
+        }
+        initRows = size_width;
+    }
+}
+
+void generatePieceZ() {
+    int initRows = 0;
+    int initColumns = size_width / 2;
+    int piece_width = 3;
+    int piece_height = 2;
+
+    for (int i = 0; i < piece_height; i++)
+    {
+        for (int j = 0; j < piece_width - 1; j++)
+        {
+            if (i == 1) 
+            { 
+                obj[(size_height * size_width) - initColumns + j+1 - initRows].texture_id = glhelper::load_texture("data/orange.tga");
+                
+            }
+            else
+            {
+                obj[(size_height * size_width) - initColumns + j - initRows].texture_id = glhelper::load_texture("data/orange.tga");
+            }  
+        }
+        initRows = size_width;
+    }
+}
+
+void generatePieceS() {
+    int initRows = 0;
+    int initColumns = size_width / 2;
+    int piece_width = 3;
+    int piece_height = 2;
+
+    for (int i = 0; i < piece_height; i++)
+    {
+        for (int j = 0; j < piece_width - 1; j++)
+        {
+            if (i == 0)
+            {
+                obj[(size_height * size_width) - initColumns + j + 1 - initRows].texture_id = glhelper::load_texture("data/green.tga");
+
+            }
+            else
+            {
+                obj[(size_height * size_width) - initColumns + j - initRows].texture_id = glhelper::load_texture("data/green.tga");
+            }
+        }
+        initRows = size_width;
+    }
+}
 /*****************************************************************************\
 * Debug funtions                                                              *
 \*****************************************************************************/

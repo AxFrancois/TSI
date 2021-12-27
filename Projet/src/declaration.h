@@ -85,3 +85,11 @@ void hard_drop();
 void line_clear();
 void rotate_right();
 void rotate_left();
+
+void generatePieceO();
+void generatePieceI();
+void generatePieceT();
+void generatePieceL();
+void generatePieceJ();
+void generatePieceZ();
+void generatePieceS();
