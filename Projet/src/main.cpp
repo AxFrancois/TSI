@@ -575,7 +575,7 @@ static void timer_callback(int)
       text_to_draw[2].value = currentTime;
       text_to_draw[2].bottomLeft = vec2(-0.9, -0.5);
       text_to_draw[2].topRight = vec2(-0.3, 0.0);
-      //soft_drop();
+      soft_drop();
       update_display_grid();
 
   }
@@ -583,7 +583,7 @@ static void timer_callback(int)
   {
       for (int j = 0; j < size_width; j++)
       {
-          if (grid[i][j] == 11 || grid[i][j] == 12 || grid[i][j] == 13 || grid[i][j] == 14 || grid[i][j] == 15 || grid[i][j] == 16 || grid[i][j] == 17)
+          if (grid[i][j] > 10)
           {
               find_movable_piece = 1;
           }
