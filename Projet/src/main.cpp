@@ -7,6 +7,7 @@
 
 #include "declaration.h"
 
+
  /*****************************************************************************\
  * Globales                                                                    *
  \*****************************************************************************/
@@ -45,13 +46,16 @@ https://i.stack.imgur.com/4pQum.png
 13 - purple (T)
 14 - light orange (L)
 15 - dark blue (J)
-16 - green (Z)
+16 - orange (Z)
 17 - green (S)
 99 - test cube
 */
 int grid[size_height][size_width] = {};
+int previous_grid[size_height][size_width] = {};
 
 long int score = 0;
+int find_movable_piece = 0;
+int imovable_piece;
 
 /*****************************************************************************\
 * initialisation                                                              *
@@ -97,7 +101,7 @@ static void init()
   text_to_draw[2].bottomLeft = vec2(-0.9, -0.5);
   text_to_draw[2].topRight = vec2(-0.3, 0.0);
 
-  algorthmic_init();
+  //algorthmic_init();
 }
 
 static void algorthmic_init() {
@@ -571,9 +575,36 @@ static void timer_callback(int)
       text_to_draw[2].value = currentTime;
       text_to_draw[2].bottomLeft = vec2(-0.9, -0.5);
       text_to_draw[2].topRight = vec2(-0.3, 0.0);
+      //soft_drop();
+      update_display_grid();
 
-      
   }
+  for (int i = 0; i < size_height; i++)
+  {
+      for (int j = 0; j < size_width; j++)
+      {
+          if (grid[i][j] == 11 || grid[i][j] == 12 || grid[i][j] == 13 || grid[i][j] == 14 || grid[i][j] == 15 || grid[i][j] == 16 || grid[i][j] == 17)
+          {
+              find_movable_piece = 1;
+          }
+          else
+          {
+              ++imovable_piece;
+          }
+      }
+  }
+
+  if (imovable_piece == 200) 
+  { 
+      find_movable_piece = 0; 
+  }
+  printf("%d \n", imovable_piece);
+  imovable_piece = 0;
+  if (find_movable_piece == 0)
+  {
+      generateRandomPiece();
+  }
+
   glutPostRedisplay();
 
 
@@ -834,7 +865,8 @@ void initGrid()
   obj[1].visible = true;
   obj[1].prog = shader_program_id;
 
-  obj[1].tr.translation = vec3(-0.5, -2.3, -5.5);
+
+  obj[1].tr.translation = vec3(-0.5, 3.4, -5.5);
 
   int currentRows = 0;
   int currentColumns = 1;
@@ -849,31 +881,14 @@ void initGrid()
     }
 
     obj[i+1].tr.translation.x += sizeOfOneCube *currentColumns;
-    obj[i+1].tr.translation.y += sizeOfOneCube *currentRows;
+    obj[i+1].tr.translation.y -= sizeOfOneCube *currentRows;
     ++currentColumns;
   }
-  generatePieceS();
-}
 
-void generatePieceO() {
-    int initRows = 0;
-    int initColumns = size_width/2;
-    int piece_width = 2;
-    int piece_height = 2;
-
-    for (int i = 0; i < piece_height; i++)
-    {
-        for (int j = 0; j < piece_width; j++)
-        {
-            obj[(size_height * size_width) - initColumns+j - initRows].texture_id = glhelper::load_texture("data/yellow.tga");
-        }
-        initRows = size_width;
-    }
+  generatePieceT();
 }
 
 void generatePieceI() {
-    int initRows = 0;
-    int initColumns = size_width / 2 +1;
     int piece_width = 4;
     int piece_height = 1;
 
@@ -881,14 +896,25 @@ void generatePieceI() {
     {
         for (int j = 0; j < piece_width; j++)
         {
-            obj[(size_height * size_width) - initColumns + j - initRows].texture_id = glhelper::load_texture("data/blue.tga");
+            grid[i][j + piece_width-1] = 11;
+        }
+    }
+}
+
+void generatePieceO() {
+    int piece_width = 2;
+    int piece_height = 2;
+
+    for (int i = 0; i < piece_height; i++)
+    {
+        for (int j = 0; j < piece_width; j++)
+        {
+            grid[i][j + piece_width*2] = 12;
         }
     }
 }
 
 void generatePieceT() {
-    int initRows = 0;
-    int initColumns = size_width / 2;
     int piece_width = 3;
     int piece_height = 2;
 
@@ -896,10 +922,9 @@ void generatePieceT() {
     {
         for (int j = 0; j < piece_width; j++)
         {
-            obj[(size_height * size_width) - initColumns + j+i - initRows].texture_id = glhelper::load_texture("data/purple.tga");
+            grid[i][j + piece_width+i] = 13;
             if (i == 1) { break; }
         }
-        initRows = size_width;
     }
 }
 
@@ -913,7 +938,7 @@ void generatePieceL() {
     {
         for (int j = 0; j < piece_width; j++)
         {
-            obj[(size_height * size_width) - initColumns + j - initRows].texture_id = glhelper::load_texture("data/yellow.tga");
+            grid[i][j + piece_width] = 14;
             if (i == 1) { break; }
         }
         initRows = size_width;
@@ -921,8 +946,6 @@ void generatePieceL() {
 }
 
 void generatePieceJ() {
-    int initRows = 0;
-    int initColumns = size_width / 2;
     int piece_width = 3;
     int piece_height = 2;
 
@@ -930,63 +953,37 @@ void generatePieceJ() {
     {
         for (int j = 0; j < piece_width; j++)
         {
-            if (i == 1) 
-            { 
-                initColumns -= 2; 
-                obj[(size_height * size_width) - initColumns + j - initRows].texture_id = glhelper::load_texture("data/dark_blue.tga");
-                break;
-            }
-            obj[(size_height * size_width) - initColumns + j - initRows].texture_id = glhelper::load_texture("data/dark_blue.tga");
+            grid[i][j + piece_width + i*2] = 15;
+            if (i == 1) { break; }
         }
-        initRows = size_width;
     }
 }
 
 void generatePieceZ() {
-    int initRows = 0;
-    int initColumns = size_width / 2;
-    int piece_width = 3;
+    int piece_width = 2;
     int piece_height = 2;
 
     for (int i = 0; i < piece_height; i++)
     {
-        for (int j = 0; j < piece_width - 1; j++)
+        for (int j = 0; j < piece_width ; j++)
         {
-            if (i == 1) 
-            { 
-                obj[(size_height * size_width) - initColumns + j+1 - initRows].texture_id = glhelper::load_texture("data/orange.tga");
-                
-            }
-            else
-            {
-                obj[(size_height * size_width) - initColumns + j - initRows].texture_id = glhelper::load_texture("data/orange.tga");
-            }  
+            grid[i][j + piece_width*2 + i] = 16;
+   
         }
-        initRows = size_width;
     }
 }
 
 void generatePieceS() {
-    int initRows = 0;
-    int initColumns = size_width / 2;
-    int piece_width = 3;
+    int piece_width = 2;
     int piece_height = 2;
 
     for (int i = 0; i < piece_height; i++)
     {
-        for (int j = 0; j < piece_width - 1; j++)
+        for (int j = 0; j < piece_width; j++)
         {
-            if (i == 0)
-            {
-                obj[(size_height * size_width) - initColumns + j + 1 - initRows].texture_id = glhelper::load_texture("data/green.tga");
+            grid[i][j + piece_width * 2+1 - i] = 17;
 
-            }
-            else
-            {
-                obj[(size_height * size_width) - initColumns + j - initRows].texture_id = glhelper::load_texture("data/green.tga");
-            }
         }
-        initRows = size_width;
     }
 }
 /*****************************************************************************\
@@ -1011,4 +1008,87 @@ void display_grid(int gridparam[size_height][size_width]) {
         printf("]\n");
     }
     printf("\n");
+}
+
+
+void update_display_grid() {
+    for (int i = 0; i < size_height; i++)
+    {
+        for (int j = 0; j < size_width; j++)
+        {
+            switch (grid[i][j])
+            {
+            case 0:
+                obj[i * 10 + j + 1].texture_id = glhelper::load_texture("data/white.tga");
+                break;
+            case 1 :
+            case 11:
+                obj[i*10+j+1].texture_id = glhelper::load_texture("data/blue.tga");
+                break;
+            case 2:
+            case 12:
+                obj[i * 10 + j + 1].texture_id = glhelper::load_texture("data/light_orange.tga");
+                break;
+            case 3:
+            case 13:
+                obj[i * 10 + j + 1].texture_id = glhelper::load_texture("data/purple.tga");
+                break;
+            case 4:
+            case 14:
+                obj[i * 10 + j + 1].texture_id = glhelper::load_texture("data/yellow.tga");
+                break;
+            case 5:
+            case 15:
+                obj[i * 10 + j + 1].texture_id = glhelper::load_texture("data/dark_blue.tga");
+                break;
+            case 6:
+            case 16:
+                obj[i * 10 + j + 1].texture_id = glhelper::load_texture("data/orange.tga");
+                break;
+            case 7:
+            case 17:
+                obj[i * 10 + j + 1].texture_id = glhelper::load_texture("data/green.tga");
+                break;
+
+            default:
+                break;
+            }
+        }
+    }
+
+}
+
+
+void generateRandomPiece() {
+    int a = 1;
+    int b = 7;
+    int sortPiece;
+    sortPiece = a + (int)((float)rand() * (b - a + 1) / (RAND_MAX - 1));
+
+    switch (sortPiece)
+    {
+    case 1:
+        generatePieceI();
+        break;
+    case 2:
+        generatePieceO();
+        break;
+    case 3:
+        generatePieceT();
+        break;
+    case 4:
+        generatePieceL();
+        break;
+    case 5:
+        generatePieceJ();
+        break;
+    case 6:
+        generatePieceZ();
+        break;
+    case 7:
+        generatePieceS();
+        break;
+    default:
+        break;
+    }
 }

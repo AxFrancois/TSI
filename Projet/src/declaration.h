@@ -70,7 +70,6 @@ void draw_text(const text* const t);
 
 void initInfoPanel();
 void initGrid();
-void myTimer(int value);
 
 void draw_obj3d(const objet3d* const obj, camera cam);
 
@@ -86,6 +85,8 @@ void line_clear();
 void rotate_right();
 void rotate_left();
 
+void update_display_grid();
+void generateRandomPiece();
 void generatePieceO();
 void generatePieceI();
 void generatePieceT();
