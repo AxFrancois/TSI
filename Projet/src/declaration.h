@@ -76,6 +76,8 @@ void draw_obj3d(const objet3d* const obj, camera cam);
 void algorthmic_init();
 const int size_height = 20;
 const int size_width = 10;
+const int next_size_height = 4;
+const int next_size_width = 6;
 void display_grid(int gridparam[size_height][size_width]);
 void move_right();
 void move_left();
@@ -86,7 +88,9 @@ void rotate_right();
 void rotate_left();
 
 void update_display_grid();
+void update_display_next_grid();
 void generateRandomPiece();
+
 void generatePieceO();
 void generatePieceI();
 void generatePieceT();
@@ -94,3 +98,14 @@ void generatePieceL();
 void generatePieceJ();
 void generatePieceZ();
 void generatePieceS();
+
+void generateNextPieceO();
+void generateNextPieceI();
+void generateNextPieceT();
+void generateNextPieceL();
+void generateNextPieceJ();
+void generateNextPieceZ();
+void generateNextPieceS();
+
+void init_hold();
+void game_over();
