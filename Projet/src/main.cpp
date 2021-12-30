@@ -57,7 +57,7 @@ int next_piece_grid[next_size_height][next_size_width] = {};
 long int score = 0;
 int find_movable_piece = 0;
 int imovable_piece;
-int sortPiece;
+int sort_piece;
 
 /*****************************************************************************\
 * initialisation                                                              *
@@ -75,6 +75,8 @@ static void init()
   initInfoPanel();
   initGrid();
   init_hold();
+
+  sort_piece = generate_random_number_piece();
 
   gui_program_id = glhelper::create_program_from_file("shaders/gui.vert", "shaders/gui.frag"); CHECK_GL_ERROR();
 
@@ -624,11 +626,14 @@ static void timer_callback(int)
       {
           find_movable_piece = 0;
       }
-
       imovable_piece = 0;
       if (find_movable_piece == 0)
       {
-          generateRandomPiece();
+          generate_piece(sort_piece);
+          sort_piece = generate_random_number_piece();
+          generate_next_piece(sort_piece);
+          update_display_next_grid();
+          reset_next_piece_grid();
       }
   }
   else
@@ -1049,7 +1054,7 @@ void generateNextPieceI() {
     {
         for (int j = 0; j < piece_width; j++)
         {
-            grid[i][j + piece_width - 1] = 11;
+            next_piece_grid[i+1][j+1] = 11;
         }
     }
 }
@@ -1062,7 +1067,7 @@ void generateNextPieceO() {
     {
         for (int j = 0; j < piece_width; j++)
         {
-            grid[i][j + piece_width * 2] = 12;
+            next_piece_grid[i+1][j + piece_width] = 12;
         }
     }
 }
@@ -1075,7 +1080,7 @@ void generateNextPieceT() {
     {
         for (int j = 0; j < piece_width; j++)
         {
-            grid[i][j + piece_width + i] = 13;
+            next_piece_grid[i+1][j +1 + i] = 13;
             if (i == 1) { break; }
         }
     }
@@ -1089,7 +1094,7 @@ void generateNextPieceL() {
     {
         for (int j = 0; j < piece_width; j++)
         {
-            grid[i][j + piece_width] = 14;
+            next_piece_grid[i+1][j + 1] = 14;
             if (i == 1) { break; }
         }
     }
@@ -1103,7 +1108,7 @@ void generateNextPieceJ() {
     {
         for (int j = 0; j < piece_width; j++)
         {
-            grid[i][j + piece_width + i * 2] = 15;
+            next_piece_grid[i+1][j + 1 + i * 2] = 15;
             if (i == 1) { break; }
         }
     }
@@ -1117,7 +1122,7 @@ void generateNextPieceZ() {
     {
         for (int j = 0; j < piece_width; j++)
         {
-            grid[i][j + piece_width * 2 + i] = 16;
+            next_piece_grid[i+1][j + 1 + i] = 16;
 
         }
     }
@@ -1131,7 +1136,7 @@ void generateNextPieceS() {
     {
         for (int j = 0; j < piece_width; j++)
         {
-            grid[i][j + piece_width * 2 + 1 - i] = 17;
+            next_piece_grid[i+1][j + 2 + - i] = 17;
 
         }
     }
@@ -1210,42 +1215,42 @@ void update_display_grid() {
 
 void update_display_next_grid() {
     int init_obj = 201;
-    for (int i = 0; i < size_height; i++)
+    for (int i = 0; i < next_size_height; i++)
     {
-        for (int j = 0; j < size_width; j++)
+        for (int j = 0; j < next_size_width; j++)
         {
             switch (next_piece_grid[i][j])
             {
             case 0:
-                obj[i * size_width + j + init_obj].texture_id = glhelper::load_texture("data/white.tga");
+                obj[i * next_size_width + j + init_obj].texture_id = glhelper::load_texture("data/white.tga");
                 break;
             case 1:
             case 11:
-                obj[i * size_width + j + init_obj].texture_id = glhelper::load_texture("data/blue.tga");
+                obj[i * next_size_width + j + init_obj].texture_id = glhelper::load_texture("data/blue.tga");
                 break;
             case 2:
             case 12:
-                obj[i * size_width + j + init_obj].texture_id = glhelper::load_texture("data/light_orange.tga");
+                obj[i * next_size_width + j + init_obj].texture_id = glhelper::load_texture("data/light_orange.tga");
                 break;
             case 3:
             case 13:
-                obj[i * size_width + j + init_obj].texture_id = glhelper::load_texture("data/purple.tga");
+                obj[i * next_size_width + j + init_obj].texture_id = glhelper::load_texture("data/purple.tga");
                 break;
             case 4:
             case 14:
-                obj[i * size_width + j + init_obj].texture_id = glhelper::load_texture("data/yellow.tga");
+                obj[i * next_size_width + j + init_obj].texture_id = glhelper::load_texture("data/yellow.tga");
                 break;
             case 5:
             case 15:
-                obj[i * size_width + j + init_obj].texture_id = glhelper::load_texture("data/dark_blue.tga");
+                obj[i * next_size_width + j + init_obj].texture_id = glhelper::load_texture("data/dark_blue.tga");
                 break;
             case 6:
             case 16:
-                obj[i * size_width + j + init_obj].texture_id = glhelper::load_texture("data/orange.tga");
+                obj[i * next_size_width + j + init_obj].texture_id = glhelper::load_texture("data/orange.tga");
                 break;
             case 7:
             case 17:
-                obj[i * size_width + j + init_obj].texture_id = glhelper::load_texture("data/green.tga");
+                obj[i * next_size_width + j + init_obj].texture_id = glhelper::load_texture("data/green.tga");
                 break;
 
             default:
@@ -1255,12 +1260,8 @@ void update_display_next_grid() {
     }
 }
 
-void generateRandomPiece() {
-    int a = 1;
-    int b = 7;
-    sortPiece = a + (int)((float)rand() * (b - a + 1) / (RAND_MAX - 1));
-    printf("%d \n", sortPiece);
-    switch (sortPiece)
+void generate_piece(int piece_number) {
+    switch (piece_number)
     {
     case 1:
         generatePieceI();
@@ -1288,10 +1289,57 @@ void generateRandomPiece() {
     }
 }
 
+void generate_next_piece(int piece_number) {
+    switch (piece_number)
+    {
+    case 1:
+        generateNextPieceI();
+        break;
+    case 2:
+        generateNextPieceO();
+        break;
+    case 3:
+        generateNextPieceT();
+        break;
+    case 4:
+        generateNextPieceL();
+        break;
+    case 5:
+        generateNextPieceJ();
+        break;
+    case 6:
+        generateNextPieceZ();
+        break;
+    case 7:
+        generateNextPieceS();
+        break;
+    default:
+        break;
+    }
+}
+
 void game_over() {
 
     text_to_draw[3] = text_to_draw[0];
     text_to_draw[3].value = "Game Over";
     text_to_draw[3].bottomLeft = vec2(-0.1, 0.0);
     text_to_draw[3].topRight = vec2(0.7, 2.2);
+}
+
+
+int generate_random_number_piece() {
+    int a = 1;
+    int b = 7;
+    int piece_number = a + (int)((float)rand() * (b - a + 1) / (RAND_MAX - 1));
+    return piece_number;
+}
+
+void reset_next_piece_grid() {
+    for (int i = 0; i < next_size_height; i++)
+    {
+        for (int j = 0; j < next_size_width; j++)
+        {
+            next_piece_grid[i][j] = 0;
+        }
+    }
 }

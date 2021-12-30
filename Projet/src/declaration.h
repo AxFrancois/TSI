@@ -70,6 +70,7 @@ void draw_text(const text* const t);
 
 void initInfoPanel();
 void initGrid();
+void init_hold();
 
 void draw_obj3d(const objet3d* const obj, camera cam);
 
@@ -89,7 +90,12 @@ void rotate_left();
 
 void update_display_grid();
 void update_display_next_grid();
-void generateRandomPiece();
+
+void generate_piece(int sort_piece);
+void generate_next_piece(int sort_piece);
+
+int generate_random_number_piece();
+
 
 void generatePieceO();
 void generatePieceI();
@@ -107,5 +113,6 @@ void generateNextPieceJ();
 void generateNextPieceZ();
 void generateNextPieceS();
 
-void init_hold();
+void reset_next_piece_grid();
+
 void game_over();
