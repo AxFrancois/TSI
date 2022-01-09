@@ -1,7 +1,7 @@
 /*****************************************************************************\
  * TP CPE, 4ETI, TP synthese d'images
  * --------------
- *
+ * made by Axel Francois & Alexis Pincemin
  * Programme principal des appels OpenGL
  \*****************************************************************************/
 
@@ -27,7 +27,6 @@ float secondes = 0;
 int timer = 0;
 bool end_of_game = false;
 
-
 //const int size_height = 20;
 //const int size_width = 10;
 
@@ -38,16 +37,16 @@ https://i.stack.imgur.com/4pQum.png
 1 - blue, immovable (I)
 2 - yellow, immovable (O)
 3 - purple, immovable (T)
-4 - light orange, immovable (L)
+4 - orange, immovable (L)
 5 - dark blue, immovable (J)
-6 - orange, immovable (Z)
+6 - red, immovable (Z)
 7 - green, immovable (S)
 11 - blue (I)
 12 - yellow (O)
 13 - purple (T)
-14 - light orange (L)
+14 - orange (L)
 15 - dark blue (J)
-16 - orange (Z)
+16 - red (Z)
 17 - green (S)
 99 - test cube
 */
@@ -113,21 +112,7 @@ static void init()
   text_to_draw[4].bottomLeft = vec2(-0.9, 0.4);
   text_to_draw[4].topRight = vec2(-0.3, 0.9);
   //algorthmic_init();
-}
-
-static void algorthmic_init() {
-    display_grid(grid);
-    grid[0][0] = 11;
-    grid[0][1] = 11;
-    grid[0][2] = 11;
-    grid[1][1] = 11;
-    for (int j = 1; j < size_width; j++) {
-        grid[19][j] = 1;
-    }
-    for (int j = 1; j < size_width; j++) {
-        grid[18][j] = 1;
-    }
-    display_grid(grid);
+  display_grid(grid);
 }
 
 /*****************************************************************************\
@@ -377,7 +362,6 @@ static void hard_drop()
 /*****************************************************************************\
 * Rotation functions                                                          *
 \*****************************************************************************/
-
 static void rotate_right()
 {
     //top left corner and bottom right of the current piece in the grid. 
@@ -521,7 +505,6 @@ static void rotate_left()
 /*****************************************************************************\
 * Scoring functions                                                           *
 \*****************************************************************************/
-
 static void line_clear() 
 {
     display_grid(grid);
@@ -646,7 +629,6 @@ static void timer_callback(int)
 
 
 }
-
 
 /*****************************************************************************\
 * main                                                                        *
@@ -822,6 +804,10 @@ GLuint upload_mesh_to_gpu(const mesh& m)
   return vao;
 }
 
+/*****************************************************************************\
+* Init UI                                                                     *
+\*****************************************************************************/
+
 void initInfoPanel()
 {
 
@@ -949,6 +935,85 @@ void init_hold() {
     }
 }
 
+/*****************************************************************************\
+* Piece generation                                                            *
+\*****************************************************************************/
+
+void generate_piece(int piece_number) {
+    switch (piece_number)
+    {
+    case 1:
+        generatePieceI();
+        break;
+    case 2:
+        generatePieceO();
+        break;
+    case 3:
+        generatePieceT();
+        break;
+    case 4:
+        generatePieceL();
+        break;
+    case 5:
+        generatePieceJ();
+        break;
+    case 6:
+        generatePieceZ();
+        break;
+    case 7:
+        generatePieceS();
+        break;
+    default:
+        break;
+    }
+}
+
+void generate_next_piece(int piece_number) {
+    switch (piece_number)
+    {
+    case 1:
+        generateNextPieceI();
+        break;
+    case 2:
+        generateNextPieceO();
+        break;
+    case 3:
+        generateNextPieceT();
+        break;
+    case 4:
+        generateNextPieceL();
+        break;
+    case 5:
+        generateNextPieceJ();
+        break;
+    case 6:
+        generateNextPieceZ();
+        break;
+    case 7:
+        generateNextPieceS();
+        break;
+    default:
+        break;
+    }
+}
+
+int generate_random_number_piece() {
+    int a = 1;
+    int b = 7;
+    int piece_number = a + (int)((float)rand() * (b - a + 1) / (RAND_MAX - 1));
+    return piece_number;
+}
+
+void reset_next_piece_grid() {
+    for (int i = 0; i < next_size_height; i++)
+    {
+        for (int j = 0; j < next_size_width; j++)
+        {
+            next_piece_grid[i][j] = 0;
+        }
+    }
+}
+
 void generatePieceI() {
     int piece_width = 4;
     int piece_height = 1;
@@ -1045,7 +1110,6 @@ void generatePieceS() {
     }
 }
 
-
 void generateNextPieceI() {
     int piece_width = 4;
     int piece_height = 1;
@@ -1141,30 +1205,10 @@ void generateNextPieceS() {
         }
     }
 }
+
 /*****************************************************************************\
-* Debug funtions                                                              *
+* Misc funtions                                                              *
 \*****************************************************************************/
-
-/*
-grid, size_height and size_width are global values, therefore we don't need parameters.
-print the grid in the terminal.
- */
-void display_grid(int gridparam[size_height][size_width]) {
-    for (int i = 0; i < size_height; i++)
-    {
-        printf("[");
-        for (int j = 0; j < size_width; j++)
-        {
-            printf("%d", gridparam[i][j]);
-            if (j != size_width - 1) {
-                printf(" ");
-            }
-        }
-        printf("]\n");
-    }
-    printf("\n");
-}
-
 
 void update_display_grid() {
     int init_obj = 1;
@@ -1177,13 +1221,13 @@ void update_display_grid() {
             case 0:
                 obj[i * size_width + j + init_obj].texture_id = glhelper::load_texture("data/white.tga");
                 break;
-            case 1 :
+            case 1:
             case 11:
-                obj[i* size_width +j+ init_obj].texture_id = glhelper::load_texture("data/blue.tga");
+                obj[i * size_width + j + init_obj].texture_id = glhelper::load_texture("data/blue.tga");
                 break;
             case 2:
             case 12:
-                obj[i * size_width + j + init_obj].texture_id = glhelper::load_texture("data/light_orange.tga");
+                obj[i * size_width + j + init_obj].texture_id = glhelper::load_texture("data/orange.tga");
                 break;
             case 3:
             case 13:
@@ -1199,7 +1243,7 @@ void update_display_grid() {
                 break;
             case 6:
             case 16:
-                obj[i * size_width + j + init_obj].texture_id = glhelper::load_texture("data/orange.tga");
+                obj[i * size_width + j + init_obj].texture_id = glhelper::load_texture("data/red.tga");
                 break;
             case 7:
             case 17:
@@ -1230,7 +1274,7 @@ void update_display_next_grid() {
                 break;
             case 2:
             case 12:
-                obj[i * next_size_width + j + init_obj].texture_id = glhelper::load_texture("data/light_orange.tga");
+                obj[i * next_size_width + j + init_obj].texture_id = glhelper::load_texture("data/orange.tga");
                 break;
             case 3:
             case 13:
@@ -1246,7 +1290,7 @@ void update_display_next_grid() {
                 break;
             case 6:
             case 16:
-                obj[i * next_size_width + j + init_obj].texture_id = glhelper::load_texture("data/orange.tga");
+                obj[i * next_size_width + j + init_obj].texture_id = glhelper::load_texture("data/red.tga");
                 break;
             case 7:
             case 17:
@@ -1260,64 +1304,6 @@ void update_display_next_grid() {
     }
 }
 
-void generate_piece(int piece_number) {
-    switch (piece_number)
-    {
-    case 1:
-        generatePieceI();
-        break;
-    case 2:
-        generatePieceO();
-        break;
-    case 3:
-        generatePieceT();
-        break; 
-    case 4:
-        generatePieceL();
-        break;
-    case 5:
-        generatePieceJ();
-        break;
-    case 6:
-        generatePieceZ();
-        break;
-    case 7:
-        generatePieceS();
-        break;
-    default:
-        break;
-    }
-}
-
-void generate_next_piece(int piece_number) {
-    switch (piece_number)
-    {
-    case 1:
-        generateNextPieceI();
-        break;
-    case 2:
-        generateNextPieceO();
-        break;
-    case 3:
-        generateNextPieceT();
-        break;
-    case 4:
-        generateNextPieceL();
-        break;
-    case 5:
-        generateNextPieceJ();
-        break;
-    case 6:
-        generateNextPieceZ();
-        break;
-    case 7:
-        generateNextPieceS();
-        break;
-    default:
-        break;
-    }
-}
-
 void game_over() {
 
     text_to_draw[3] = text_to_draw[0];
@@ -1326,20 +1312,43 @@ void game_over() {
     text_to_draw[3].topRight = vec2(0.7, 2.2);
 }
 
+/*****************************************************************************\
+* Debug funtions                                                              *
+\*****************************************************************************/
 
-int generate_random_number_piece() {
-    int a = 1;
-    int b = 7;
-    int piece_number = a + (int)((float)rand() * (b - a + 1) / (RAND_MAX - 1));
-    return piece_number;
+/*
+print the grid in the terminal.
+ */
+void display_grid(int gridparam[size_height][size_width]) {
+    for (int i = 0; i < size_height; i++)
+    {
+        printf("[");
+        for (int j = 0; j < size_width; j++)
+        {
+            printf("%d", gridparam[i][j]);
+            if (j != size_width - 1) {
+                printf(" ");
+            }
+        }
+        printf("]\n");
+    }
+    printf("\n");
 }
 
-void reset_next_piece_grid() {
-    for (int i = 0; i < next_size_height; i++)
-    {
-        for (int j = 0; j < next_size_width; j++)
-        {
-            next_piece_grid[i][j] = 0;
-        }
+/*
+Create pieces for testing purposes
+ */
+static void algorthmic_init() {
+    display_grid(grid);
+    grid[0][0] = 11;
+    grid[0][1] = 11;
+    grid[0][2] = 11;
+    grid[1][1] = 11;
+    for (int j = 1; j < size_width; j++) {
+        grid[19][j] = 1;
     }
+    for (int j = 1; j < size_width; j++) {
+        grid[18][j] = 1;
+    }
+    display_grid(grid);
 }
